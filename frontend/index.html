@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="payrollApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payroll Manager</title>
+  <script src="config.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0f14;
+      --surface: #16181f;
+      --surface2: #1e2029;
+      --border: #2a2d3a;
+      --accent: #6c63ff;
+      --accent2: #a78bfa;
+      --success: #22c55e;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --text: #e8eaf0;
+      --text2: #8b8fa8;
+      --text3: #5a5e73;
+      --sidebar-w: 240px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── LOGIN ─────────────────────────────────────────────────── */
+    .login-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      position: relative;
+    }
+
+    .login-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 30%, rgba(108,99,255,0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 80% 70%, rgba(167,139,250,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .login-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px 40px;
+      width: 400px;
+      box-shadow: 0 32px 64px rgba(0,0,0,0.5);
+    }
+
+    .login-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .login-logo-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .login-logo-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .login-logo-sub {
+      font-size: 11px;
+      color: var(--text3);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+    }
+
+    .login-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .login-subtitle {
+      font-size: 14px;
+      color: var(--text2);
+      margin-bottom: 32px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text2);
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(108,99,255,0.15);
+    }
+
+    .form-input::placeholder { color: var(--text3); }
+
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent), #8b83ff);
+      border: none;
+      border-radius: 10px;
+      padding: 13px;
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      margin-top: 8px;
+    }
+
+    .btn-primary:hover { opacity: 0.92; }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .alert {
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .alert-error {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.25);
+      color: #fca5a5;
+    }
+
+    .alert-success {
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.25);
+      color: #86efac;
+    }
+
+    /* ── APP SHELL ──────────────────────────────────────────────── */
+    .app-shell {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ────────────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      z-index: 10;
+    }
+
+    .sidebar-header {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .brand-sub {
+      font-size: 10px;
+      color: var(--text3);
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 20px 12px;
+    }
+
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text3);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 0 8px;
+      margin-bottom: 8px;
+      margin-top: 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      color: var(--text2);
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 2px;
+      user-select: none;
+    }
+
+    .nav-item:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .nav-item.active {
+      background: rgba(108,99,255,0.15);
+      color: var(--accent2);
+    }
+
+    .nav-item.active .nav-icon { color: var(--accent); }
+
+    .nav-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      opacity: 0.8;
+    }
+
+    .nav-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .sidebar-footer {
+      padding: 16px 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: var(--surface2);
+    }
+
+    .user-avatar {
+      width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .user-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .user-role {
+      font-size: 10px;
+      color: var(--text3);
+    }
+
+    .logout-btn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text3);
+      padding: 4px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s;
+    }
+
+    .logout-btn:hover { color: var(--error); }
+
+    /* ── MAIN CONTENT ───────────────────────────────────────────── */
+    .main-content {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      padding: 40px;
+      max-width: 820px;
+    }
+
+    .page-header {
+      margin-bottom: 32px;
+    }
+
+    .page-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(108,99,255,0.12);
+      border: 1px solid rgba(108,99,255,0.25);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent2);
+      letter-spacing: 0.4px;
+      margin-bottom: 12px;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .page-desc {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.5;
+    }
+
+    /* ── UPLOAD CARD ────────────────────────────────────────────── */
+    .upload-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .upload-card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .upload-card-title span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: inline-block;
+    }
+
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 32px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(108,99,255,0.04);
+    }
+
+    .drop-zone.has-file {
+      border-color: var(--success);
+      background: rgba(34,197,94,0.04);
+    }
+
+    .drop-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .drop-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .drop-subtitle {
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .file-selected {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: rgba(34,197,94,0.08);
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 8px;
+      margin-top: 12px;
+    }
+
+    .file-icon { font-size: 18px; }
+
+    .file-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--success);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-clear {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text3);
+      font-size: 16px;
+      line-height: 1;
+      padding: 2px 4px;
+      border-radius: 4px;
+      transition: color 0.15s;
+    }
+
+    .file-clear:hover { color: var(--error); }
+
+    /* ── RUN BUTTON ─────────────────────────────────────────────── */
+    .run-section {
+      margin-top: 24px;
+    }
+
+    .btn-run {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, var(--accent), #8b83ff);
+      border: none;
+      border-radius: 12px;
+      padding: 14px 28px;
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(108,99,255,0.3);
+    }
+
+    .btn-run:hover { opacity: 0.9; box-shadow: 0 6px 28px rgba(108,99,255,0.4); }
+    .btn-run:active { transform: scale(0.97); }
+    .btn-run:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── STATUS MESSAGES ────────────────────────────────────────── */
+    .status-msg {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 14px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-top: 16px;
+      line-height: 1.5;
+    }
+
+    .status-msg.error {
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.2);
+      color: #fca5a5;
+    }
+
+    .status-msg.success {
+      background: rgba(34,197,94,0.08);
+      border: 1px solid rgba(34,197,94,0.2);
+      color: #86efac;
+    }
+
+    .status-msg.loading {
+      background: rgba(108,99,255,0.08);
+      border: 1px solid rgba(108,99,255,0.2);
+      color: var(--accent2);
+    }
+
+    /* ── INFO BOX ───────────────────────────────────────────────── */
+    .info-box {
+      background: rgba(108,99,255,0.06);
+      border: 1px solid rgba(108,99,255,0.15);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .info-box strong { color: var(--accent2); }
+
+    /* ── DIVIDER ────────────────────────────────────────────────── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 28px 0;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body ng-controller="AppCtrl">
+
+  <!-- ───────────────── LOGIN ───────────────── -->
+  <div class="login-wrap" ng-if="!loggedIn">
+    <div class="login-bg"></div>
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-logo-icon">📊</div>
+        <div>
+          <div class="login-logo-text">PAYROLL MGR</div>
+          <div class="login-logo-sub">Attendance Processing Tool</div>
+        </div>
+      </div>
+      <div class="login-title">Welcome back</div>
+      <div class="login-subtitle">Sign in to access the payroll dashboard</div>
+
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input class="form-input" type="text" ng-model="creds.username"
+               placeholder="Enter username" ng-keydown="onEnter($event)" autofocus>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" ng-model="creds.password"
+               placeholder="Enter password" ng-keydown="onEnter($event)">
+      </div>
+
+      <button class="btn-primary" ng-click="login()" ng-disabled="loginLoading">
+        <span ng-if="!loginLoading">Sign In →</span>
+        <span ng-if="loginLoading">Authenticating…</span>
+      </button>
+
+      <div class="alert alert-error" ng-if="loginError">
+        ⚠ {{loginError}}
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── APP SHELL ───────────────── -->
+  <div class="app-shell" ng-if="loggedIn">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <div class="brand-icon">📊</div>
+          <div>
+            <div class="brand-name">PAYROLL MGR</div>
+            <div class="brand-sub">Attendance Tool</div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Processing</div>
+
+        <div class="nav-item" ng-class="{active: currentPage === 'new'}"
+             ng-click="setPage('new')">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14,2 14,8 20,8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <line x1="9" y1="15" x2="15" y2="15"/>
+          </svg>
+          New Month
+          <span class="nav-dot" ng-if="currentPage === 'new'"></span>
+        </div>
+
+        <div class="nav-item" ng-class="{active: currentPage === 'existing'}"
+             ng-click="setPage('existing')">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Existing Month
+          <span class="nav-dot" ng-if="currentPage === 'existing'"></span>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <div class="user-avatar">{{currentUser.charAt(0).toUpperCase()}}</div>
+          <div>
+            <div class="user-name">{{currentUser}}</div>
+            <div class="user-role">Administrator</div>
+          </div>
+          <button class="logout-btn" ng-click="logout()" title="Logout">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16,17 21,12 16,7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- ── NEW MONTH ──────────────────────────────────────────── -->
+      <div ng-if="currentPage === 'new'">
+        <div class="page-header">
+          <div class="page-badge">✦ New Month Processing</div>
+          <div class="page-title">Generate New Payroll</div>
+          <div class="page-desc">Upload the Truein attendance export to create a brand-new <strong>final_payroll.xlsx</strong> for this month.</div>
+        </div>
+
+        <div class="info-box">
+          Upload the <strong>Truein report (.xlsx)</strong> downloaded from your attendance system.
+          The tool will parse all employees and generate a formatted payroll sheet ready for review.
+        </div>
+
+        <div class="upload-card">
+          <div class="upload-card-title"><span></span> Truein Input File</div>
+          <div class="drop-zone" ng-class="{'has-file': newFile}">
+            <input type="file" accept=".xlsx,.xls" ng-change="onNewFileChange($event)"
+                   onchange="angular.element(this).scope().onNewFileChange(this.files[0])">
+            <span class="drop-icon" ng-if="!newFile">📁</span>
+            <div class="drop-title" ng-if="!newFile">Drop file here or click to browse</div>
+            <div class="drop-subtitle" ng-if="!newFile">Accepts .xlsx and .xls files</div>
+            <span class="drop-icon" ng-if="newFile">✅</span>
+            <div class="drop-title" ng-if="newFile">File ready to process</div>
+          </div>
+          <div class="file-selected" ng-if="newFile">
+            <span class="file-icon">📄</span>
+            <span class="file-name">{{newFile.name}}</span>
+            <button class="file-clear" ng-click="clearNewFile()">✕</button>
+          </div>
+        </div>
+
+        <div class="run-section">
+          <button class="btn-run" ng-click="runNewMonth()" ng-disabled="!newFile || processing">
+            <span ng-if="!processing">▶ Run & Download</span>
+            <div class="spinner" ng-if="processing"></div>
+            <span ng-if="processing">Processing…</span>
+          </button>
+        </div>
+
+        <div class="status-msg loading" ng-if="processing">
+          <span>⏳</span> Parsing attendance data and generating payroll sheet…
+        </div>
+        <div class="status-msg success" ng-if="newSuccess && !processing">
+          <span>✅</span> {{newSuccess}}
+        </div>
+        <div class="status-msg error" ng-if="newError && !processing">
+          <span>⚠</span> {{newError}}
+        </div>
+      </div>
+
+      <!-- ── EXISTING MONTH ─────────────────────────────────────── -->
+      <div ng-if="currentPage === 'existing'">
+        <div class="page-header">
+          <div class="page-badge">✦ Existing Month Update</div>
+          <div class="page-title">Update Payroll Sheet</div>
+          <div class="page-desc">Upload both the updated Truein report and your existing payroll file. New rows will be appended, existing dates preserved.</div>
+        </div>
+
+        <div class="info-box">
+          The tool compares both files by <strong>date</strong>. Only missing dates will be added — no existing data is overwritten.
+          Your updated <strong>final_payroll.xlsx</strong> will be returned for download.
+        </div>
+
+        <div class="upload-card">
+          <div class="upload-card-title"><span></span> Truein Input File (Updated Data)</div>
+          <div class="drop-zone" ng-class="{'has-file': existingInputFile}">
+            <input type="file" accept=".xlsx,.xls"
+                   onchange="angular.element(this).scope().onExistingInputChange(this.files[0])">
+            <span class="drop-icon" ng-if="!existingInputFile">📁</span>
+            <div class="drop-title" ng-if="!existingInputFile">Drop Truein file here or click to browse</div>
+            <div class="drop-subtitle" ng-if="!existingInputFile">Contains the latest attendance data</div>
+            <span class="drop-icon" ng-if="existingInputFile">✅</span>
+            <div class="drop-title" ng-if="existingInputFile">Input file ready</div>
+          </div>
+          <div class="file-selected" ng-if="existingInputFile">
+            <span class="file-icon">📄</span>
+            <span class="file-name">{{existingInputFile.name}}</span>
+            <button class="file-clear" ng-click="clearExistingInput()">✕</button>
+          </div>
+        </div>
+
+        <div class="upload-card">
+          <div class="upload-card-title"><span></span> Existing Payroll File (final_payroll.xlsx)</div>
+          <div class="drop-zone" ng-class="{'has-file': existingOutputFile}">
+            <input type="file" accept=".xlsx,.xls"
+                   onchange="angular.element(this).scope().onExistingOutputChange(this.files[0])">
+            <span class="drop-icon" ng-if="!existingOutputFile">📂</span>
+            <div class="drop-title" ng-if="!existingOutputFile">Drop existing payroll file here or click to browse</div>
+            <div class="drop-subtitle" ng-if="!existingOutputFile">This is the file you want to update</div>
+            <span class="drop-icon" ng-if="existingOutputFile">✅</span>
+            <div class="drop-title" ng-if="existingOutputFile">Output file ready</div>
+          </div>
+          <div class="file-selected" ng-if="existingOutputFile">
+            <span class="file-icon">📄</span>
+            <span class="file-name">{{existingOutputFile.name}}</span>
+            <button class="file-clear" ng-click="clearExistingOutput()">✕</button>
+          </div>
+        </div>
+
+        <div class="run-section">
+          <button class="btn-run" ng-click="runExistingMonth()"
+                  ng-disabled="!existingInputFile || !existingOutputFile || processing">
+            <span ng-if="!processing">▶ Update & Download</span>
+            <div class="spinner" ng-if="processing"></div>
+            <span ng-if="processing">Processing…</span>
+          </button>
+        </div>
+
+        <div class="status-msg loading" ng-if="processing">
+          <span>⏳</span> Merging attendance data with existing payroll…
+        </div>
+        <div class="status-msg success" ng-if="existingSuccess && !processing">
+          <span>✅</span> {{existingSuccess}}
+        </div>
+        <div class="status-msg error" ng-if="existingError && !processing">
+          <span>⚠</span> {{existingError}}
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    angular.module('payrollApp', [])
+      .controller('AppCtrl', ['$scope', '$http', function($scope, $http) {
+
+        // In production, RENDER_BACKEND_URL is injected via config.js (see deployment guide)
+        // For local dev it falls back to localhost:5000
+        const API = (window.PAYROLL_API_URL || 'http://localhost:5000') + '/api';
+
+        // ── State ─────────────────────────────────────────────────
+        $scope.loggedIn = false;
+        $scope.currentPage = 'new';
+        $scope.currentUser = '';
+        $scope.creds = { username: '', password: '' };
+        $scope.loginError = '';
+        $scope.loginLoading = false;
+
+        $scope.newFile = null;
+        $scope.processing = false;
+        $scope.newSuccess = '';
+        $scope.newError = '';
+
+        $scope.existingInputFile = null;
+        $scope.existingOutputFile = null;
+        $scope.existingSuccess = '';
+        $scope.existingError = '';
+
+        // ── Auth ──────────────────────────────────────────────────
+        $scope.onEnter = function(e) {
+          if (e.keyCode === 13) $scope.login();
+        };
+
+        $scope.login = function() {
+          $scope.loginError = '';
+          $scope.loginLoading = true;
+          $http.post(API + '/login', $scope.creds)
+            .then(function(res) {
+              $scope.loggedIn = true;
+              $scope.currentUser = $scope.creds.username;
+            })
+            .catch(function(err) {
+              $scope.loginError = (err.data && err.data.message) || 'Login failed. Please try again.';
+            })
+            .finally(function() {
+              $scope.loginLoading = false;
+            });
+        };
+
+        $scope.logout = function() {
+          $scope.loggedIn = false;
+          $scope.creds = { username: '', password: '' };
+          $scope.clearAll();
+        };
+
+        $scope.setPage = function(page) {
+          $scope.currentPage = page;
+          $scope.clearMessages();
+        };
+
+        $scope.clearMessages = function() {
+          $scope.newSuccess = ''; $scope.newError = '';
+          $scope.existingSuccess = ''; $scope.existingError = '';
+        };
+
+        $scope.clearAll = function() {
+          $scope.newFile = null;
+          $scope.existingInputFile = null;
+          $scope.existingOutputFile = null;
+          $scope.clearMessages();
+        };
+
+        // ── File handlers ─────────────────────────────────────────
+        $scope.onNewFileChange = function(file) {
+          $scope.$apply(function() {
+            $scope.newFile = file;
+            $scope.newSuccess = '';
+            $scope.newError = '';
+          });
+        };
+
+        $scope.clearNewFile = function() {
+          $scope.newFile = null;
+          $scope.newSuccess = '';
+          $scope.newError = '';
+        };
+
+        $scope.onExistingInputChange = function(file) {
+          $scope.$apply(function() {
+            $scope.existingInputFile = file;
+            $scope.existingSuccess = '';
+            $scope.existingError = '';
+          });
+        };
+
+        $scope.onExistingOutputChange = function(file) {
+          $scope.$apply(function() {
+            $scope.existingOutputFile = file;
+            $scope.existingSuccess = '';
+            $scope.existingError = '';
+          });
+        };
+
+        $scope.clearExistingInput = function() {
+          $scope.existingInputFile = null;
+        };
+
+        $scope.clearExistingOutput = function() {
+          $scope.existingOutputFile = null;
+        };
+
+        // ── Helpers ───────────────────────────────────────────────
+        function downloadBlob(blob, filename) {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+        }
+
+        function postFiles(endpoint, formData, onSuccess, onError) {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', API + endpoint);
+          xhr.responseType = 'blob';
+          xhr.onload = function() {
+            if (xhr.status === 200) {
+              onSuccess(xhr.response);
+            } else {
+              const reader = new FileReader();
+              reader.onload = function() {
+                try {
+                  const err = JSON.parse(reader.result);
+                  onError(err.error || 'An error occurred');
+                } catch(e) {
+                  onError('Processing failed. Check your file format.');
+                }
+              };
+              reader.readAsText(xhr.response);
+            }
+            $scope.$apply(function() { $scope.processing = false; });
+          };
+          xhr.onerror = function() {
+            $scope.$apply(function() {
+              $scope.processing = false;
+              onError('Could not connect to server. Is the backend running on port 5000?');
+            });
+          };
+          xhr.send(formData);
+        }
+
+        // ── Run New Month ─────────────────────────────────────────
+        $scope.runNewMonth = function() {
+          if (!$scope.newFile) return;
+          $scope.processing = true;
+          $scope.newSuccess = '';
+          $scope.newError = '';
+
+          const fd = new FormData();
+          fd.append('input_file', $scope.newFile);
+
+          postFiles('/new-month', fd,
+            function(blob) {
+              downloadBlob(blob, 'final_payroll.xlsx');
+              $scope.$apply(function() {
+                $scope.newSuccess = 'Payroll file generated and downloaded as final_payroll.xlsx';
+              });
+            },
+            function(msg) {
+              $scope.$apply(function() { $scope.newError = msg; });
+            }
+          );
+        };
+
+        // ── Run Existing Month ────────────────────────────────────
+        $scope.runExistingMonth = function() {
+          if (!$scope.existingInputFile || !$scope.existingOutputFile) return;
+          $scope.processing = true;
+          $scope.existingSuccess = '';
+          $scope.existingError = '';
+
+          const fd = new FormData();
+          fd.append('input_file', $scope.existingInputFile);
+          fd.append('output_file', $scope.existingOutputFile);
+
+          postFiles('/existing-month', fd,
+            function(blob) {
+              downloadBlob(blob, 'final_payroll.xlsx');
+              $scope.$apply(function() {
+                $scope.existingSuccess = 'Payroll updated successfully. New rows added and file downloaded as final_payroll.xlsx';
+              });
+            },
+            function(msg) {
+              $scope.$apply(function() { $scope.existingError = msg; });
+            }
+          );
+        };
+
+      }]);
+  </script>
+</body>
+</html>

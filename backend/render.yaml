@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: payroll-backend
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PAYROLL_USER
+        sync: false   # Set manually in Render dashboard — never commit credentials
+      - key: PAYROLL_PASS
+        sync: false   # Set manually in Render dashboard — never commit credentials
+      - key: FRONTEND_ORIGIN
+        sync: false   # Set to your GitHub Pages URL e.g. https://yourusername.github.io
