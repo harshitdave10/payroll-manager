@@ -7,4 +7,4 @@
 //   3. Paste it below and commit
 // ─────────────────────────────────────────────────────────────────────────────
 
-window.PAYROLL_API_URL = 'https://YOUR-RENDER-APP.onrender.com';
+window.PAYROLL_API_URL = 'https://payroll-backend.onrender.com';
