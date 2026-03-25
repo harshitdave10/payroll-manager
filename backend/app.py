@@ -46,21 +46,23 @@ def detect_excel_engine(filepath):
     with open(filepath, "rb") as f:
         signature = f.read(8)
     if signature.startswith(b"\xD0\xCF\x11\xE0"):
-        return "xlrd"
-    return "openpyxl"
+        return ["calamine", "xlrd"]
+    return ["calamine", "openpyxl"]
 
 
 def read_excel(filepath, **kwargs):
-    engine = detect_excel_engine(filepath)
-    try:
-        return pd.read_excel(filepath, engine=engine, **kwargs)
-    except Exception as exc:
-        if engine == "xlrd":
-            raise ValueError(
-                "The uploaded input file appears to be an older Excel .xls workbook that could not be read cleanly. "
-                "Please open it in Excel and re-save it as a real .xlsx file, then upload it again."
-            ) from exc
-        raise
+    errors = []
+    for engine in detect_excel_engine(filepath):
+        try:
+            return pd.read_excel(filepath, engine=engine, **kwargs)
+        except Exception as exc:
+            errors.append((engine, exc))
+
+    engine_names = ", ".join(engine for engine, _ in errors)
+    raise ValueError(
+        f"Could not read the uploaded Excel file. Tried engines: {engine_names}. "
+        "Please make sure the file is a valid .xls or .xlsx workbook and try again."
+    ) from errors[-1][1]
 
 
 def safe_sheet_name(name, used_names=None):

@@ -3,5 +3,6 @@ flask-cors>=4.0.0
 pandas>=2.0.0
 openpyxl>=3.1.0
 xlrd>=2.0.1
+python-calamine>=0.2.0
 werkzeug>=2.3.0
 gunicorn>=21.2.0
