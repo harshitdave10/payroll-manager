@@ -51,7 +51,16 @@ def detect_excel_engine(filepath):
 
 
 def read_excel(filepath, **kwargs):
-    return pd.read_excel(filepath, engine=detect_excel_engine(filepath), **kwargs)
+    engine = detect_excel_engine(filepath)
+    try:
+        return pd.read_excel(filepath, engine=engine, **kwargs)
+    except Exception as exc:
+        if engine == "xlrd":
+            raise ValueError(
+                "The uploaded input file appears to be an older Excel .xls workbook that could not be read cleanly. "
+                "Please open it in Excel and re-save it as a real .xlsx file, then upload it again."
+            ) from exc
+        raise
 
 
 def safe_sheet_name(name, used_names=None):
