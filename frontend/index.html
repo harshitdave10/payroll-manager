@@ -716,7 +716,7 @@
         <div class="upload-card">
           <div class="upload-card-title"><span></span> Truein Input File</div>
           <div class="drop-zone" ng-class="{'has-file': newFile}">
-            <input type="file" accept=".xlsx,.xls" ng-change="onNewFileChange($event)"
+            <input type="file" accept=".xlsx,.xls"
                    onchange="angular.element(this).scope().onNewFileChange(this.files[0])">
             <span class="drop-icon" ng-if="!newFile">📁</span>
             <div class="drop-title" ng-if="!newFile">Drop file here or click to browse</div>
