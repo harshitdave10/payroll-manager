@@ -466,6 +466,14 @@ def employee_key(employee):
     )
 
 
+def merge_day_records(existing_day, new_day):
+    merged = dict(existing_day or {})
+    for field, value in (new_day or {}).items():
+        if field not in merged or normalize_text(merged.get(field)) == "":
+            merged[field] = value
+    return merged
+
+
 # ── New Month ─────────────────────────────────────────────────────
 @app.route("/api/new-month", methods=["POST"])
 def new_month():
@@ -529,11 +537,16 @@ def existing_month():
                         if date_key not in existing_emp["data"]:
                             existing_emp["data"][date_key] = day_data
                             updated = True
-                    if new_emp.get("overtime_total"):
+                        else:
+                            existing_emp["data"][date_key] = merge_day_records(
+                                existing_emp["data"].get(date_key, {}),
+                                day_data,
+                            )
+                    if not existing_emp.get("overtime_total") and new_emp.get("overtime_total"):
                         existing_emp["overtime_total"] = new_emp["overtime_total"]
-                    if new_emp.get("payable_days"):
+                    if not existing_emp.get("payable_days") and new_emp.get("payable_days"):
                         existing_emp["payable_days"] = new_emp["payable_days"]
-                    if new_emp.get("designation"):
+                    if not existing_emp.get("designation") and new_emp.get("designation"):
                         existing_emp["designation"] = new_emp["designation"]
                 else:
                     existing_employees.append(new_emp)
