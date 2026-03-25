@@ -529,8 +529,13 @@ def existing_month():
                     updated = True
 
             merged_sites[site_name] = existing_employees
-            merged_dates[site_name].update(existing_site_dates.get(site_name, []))
-            merged_dates[site_name].update(new_site_dates.get(site_name, []))
+            existing_dates_for_site = set(existing_site_dates.get(site_name, []))
+            new_dates_for_site = set(new_site_dates.get(site_name, []))
+            if new_dates_for_site - existing_dates_for_site:
+                updated = True
+
+            merged_dates[site_name].update(existing_dates_for_site)
+            merged_dates[site_name].update(new_dates_for_site)
 
         if not updated:
             return jsonify({
