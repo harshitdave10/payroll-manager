@@ -950,7 +950,22 @@
           xhr.responseType = 'blob';
           xhr.onload = function() {
             if (xhr.status === 200) {
-              onSuccess(xhr.response);
+              const contentType = xhr.getResponseHeader('Content-Type') || '';
+              if (contentType.indexOf('application/json') !== -1) {
+                const reader = new FileReader();
+                reader.onload = function() {
+                  try {
+                    onSuccess(null, JSON.parse(reader.result));
+                  } catch (e) {
+                    onError('Processing completed, but the server response could not be read.');
+                  }
+                  $scope.$apply(function() { $scope.processing = false; });
+                };
+                reader.readAsText(xhr.response);
+                return;
+              }
+
+              onSuccess(xhr.response, null);
             } else {
               const reader = new FileReader();
               reader.onload = function() {
@@ -1009,7 +1024,14 @@
           fd.append('output_file', $scope.existingOutputFile);
 
           postFiles('/existing-month', fd,
-            function(blob) {
+            function(blob, payload) {
+              if (payload && payload.up_to_date) {
+                $scope.$apply(function() {
+                  $scope.existingSuccess = payload.message || 'The uploaded file is already up to date.';
+                });
+                return;
+              }
+
               downloadBlob(blob, 'final_payroll.xlsx');
               $scope.$apply(function() {
                 $scope.existingSuccess = 'Payroll updated successfully. New rows added and file downloaded as final_payroll.xlsx';

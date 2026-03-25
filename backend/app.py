@@ -503,6 +503,7 @@ def existing_month():
         merged_sites = defaultdict(list)
         merged_dates = defaultdict(set)
         all_sites = set(existing_sites.keys()) | set(new_sites.keys())
+        updated = False
 
         for site_name in all_sites:
             existing_employees = list(existing_sites.get(site_name, []))
@@ -516,6 +517,7 @@ def existing_month():
                     for date_key, day_data in new_emp["data"].items():
                         if date_key not in existing_emp["data"]:
                             existing_emp["data"][date_key] = day_data
+                            updated = True
                     if new_emp.get("overtime_total"):
                         existing_emp["overtime_total"] = new_emp["overtime_total"]
                     if new_emp.get("payable_days"):
@@ -524,10 +526,17 @@ def existing_month():
                         existing_emp["designation"] = new_emp["designation"]
                 else:
                     existing_employees.append(new_emp)
+                    updated = True
 
             merged_sites[site_name] = existing_employees
             merged_dates[site_name].update(existing_site_dates.get(site_name, []))
             merged_dates[site_name].update(new_site_dates.get(site_name, []))
+
+        if not updated:
+            return jsonify({
+                "up_to_date": True,
+                "message": "The uploaded file is already up to date. No new rows were added."
+            }), 200
 
         wb  = build_workbook(
             merged_sites,
