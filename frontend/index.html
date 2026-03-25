@@ -716,7 +716,7 @@
         <div class="upload-card">
           <div class="upload-card-title"><span></span> Truein Input File</div>
           <div class="drop-zone" ng-class="{'has-file': newFile}">
-            <input type="file" accept=".xlsx,.xls"
+            <input id="new-month-file" type="file" accept=".xlsx,.xls"
                    onchange="angular.element(this).scope().onNewFileChange(this.files[0])">
             <span class="drop-icon" ng-if="!newFile">📁</span>
             <div class="drop-title" ng-if="!newFile">Drop file here or click to browse</div>
@@ -766,7 +766,7 @@
         <div class="upload-card">
           <div class="upload-card-title"><span></span> Truein Input File (Updated Data)</div>
           <div class="drop-zone" ng-class="{'has-file': existingInputFile}">
-            <input type="file" accept=".xlsx,.xls"
+            <input id="existing-input-file" type="file" accept=".xlsx,.xls"
                    onchange="angular.element(this).scope().onExistingInputChange(this.files[0])">
             <span class="drop-icon" ng-if="!existingInputFile">📁</span>
             <div class="drop-title" ng-if="!existingInputFile">Drop Truein file here or click to browse</div>
@@ -784,7 +784,7 @@
         <div class="upload-card">
           <div class="upload-card-title"><span></span> Existing Payroll File (final_payroll.xlsx)</div>
           <div class="drop-zone" ng-class="{'has-file': existingOutputFile}">
-            <input type="file" accept=".xlsx,.xls"
+            <input id="existing-output-file" type="file" accept=".xlsx,.xls"
                    onchange="angular.element(this).scope().onExistingOutputChange(this.files[0])">
             <span class="drop-icon" ng-if="!existingOutputFile">📂</span>
             <div class="drop-title" ng-if="!existingOutputFile">Drop existing payroll file here or click to browse</div>
@@ -889,8 +889,16 @@
           $scope.newFile = null;
           $scope.existingInputFile = null;
           $scope.existingOutputFile = null;
+          resetFileInput('new-month-file');
+          resetFileInput('existing-input-file');
+          resetFileInput('existing-output-file');
           $scope.clearMessages();
         };
+
+        function resetFileInput(inputId) {
+          const input = document.getElementById(inputId);
+          if (input) input.value = '';
+        }
 
         // ── File handlers ─────────────────────────────────────────
         $scope.onNewFileChange = function(file) {
@@ -905,6 +913,7 @@
           $scope.newFile = null;
           $scope.newSuccess = '';
           $scope.newError = '';
+          resetFileInput('new-month-file');
         };
 
         $scope.onExistingInputChange = function(file) {
@@ -925,10 +934,12 @@
 
         $scope.clearExistingInput = function() {
           $scope.existingInputFile = null;
+          resetFileInput('existing-input-file');
         };
 
         $scope.clearExistingOutput = function() {
           $scope.existingOutputFile = null;
+          resetFileInput('existing-output-file');
         };
 
         // ── Helpers ───────────────────────────────────────────────
