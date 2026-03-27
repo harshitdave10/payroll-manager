@@ -25,7 +25,7 @@ thin        = Border(left=Side(style="thin"), right=Side(style="thin"),
 header_fill = PatternFill("solid", start_color="D9E1F2", end_color="D9E1F2")
 total_fill  = PatternFill("solid", start_color="E2EFDA", end_color="E2EFDA")
 emp_fill    = PatternFill("solid", start_color="FCE4D6", end_color="FCE4D6")
-status_fill = PatternFill("solid", start_color="DDEBF7", end_color="DDEBF7")
+status_fill = PatternFill("solid", start_color="C65911", end_color="C65911")
 
 
 # ── Auth ──────────────────────────────────────────────────────────
