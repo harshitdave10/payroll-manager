@@ -25,6 +25,7 @@ thin        = Border(left=Side(style="thin"), right=Side(style="thin"),
 header_fill = PatternFill("solid", start_color="D9E1F2", end_color="D9E1F2")
 total_fill  = PatternFill("solid", start_color="E2EFDA", end_color="E2EFDA")
 emp_fill    = PatternFill("solid", start_color="FCE4D6", end_color="FCE4D6")
+status_fill = PatternFill("solid", start_color="DDEBF7", end_color="DDEBF7")
 
 
 # ── Auth ──────────────────────────────────────────────────────────
@@ -387,11 +388,14 @@ def write_employee_block(ws, start_row, emp, date_keys):
     for idx, date_key in enumerate(date_keys):
         row_idx = data_start + idx
         record = emp["data"].get(date_key, {})
+        highlight_row = record.get("status") in {"PH", "WO"}
         date_cell = ws.cell(row_idx, 1, parse_date_key(date_key))
         date_cell.number_format = "DD-MMM-YYYY"
         date_cell.font = data_font
         date_cell.border = thin
         date_cell.alignment = center
+        if highlight_row:
+            date_cell.fill = status_fill
 
         values = [
             record.get("status", ""),
@@ -407,8 +411,10 @@ def write_employee_block(ws, start_row, emp, date_keys):
             cell.font = data_font
             cell.border = thin
             cell.alignment = center
+            if highlight_row:
+                cell.fill = status_fill
 
-    total_row = data_start + len(date_keys)
+    total_row = data_start + len(date_keys) + 1
     for label, value, row_idx in [
         ("TOTAL DAYS", emp.get("payable_days", ""), total_row),
         ("OVER TIME", emp.get("overtime_total", ""), total_row + 1),
@@ -423,7 +429,7 @@ def write_employee_block(ws, start_row, emp, date_keys):
             cell.border = thin
             cell.alignment = center
 
-    summary_row = total_row + 3
+    summary_row = total_row + 4
     for col, value in [(1, "OP. BALANCE LEAVE"), (3, "LEAVE TEKAN THIS MONTH"), (6, "BALANCE LEAVE")]:
         cell = ws.cell(summary_row, col, value)
         cell.font = Font(bold=True, name="Arial")
